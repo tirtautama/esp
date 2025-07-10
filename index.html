@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="id" data-bs-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Monitoring Tambak</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        /* === Custom Variables === */
+        :root {
+            --primary-color: #00A97F; /* Hijau Segar */
+            --primary-hover: #008f6b;
+            --secondary-color: #0d6efd; /* Biru */
+            --sidebar-bg: #ffffff;
+            --sidebar-width: 280px;
+            --body-bg-light: #f4f7fc;
+            --card-bg-light: #ffffff;
+            --text-color-light: #495057;
+            --border-color-light: #dee2e6;
+            
+            --body-bg-dark: #121212;
+            --card-bg-dark: #1e1e1e;
+            --text-color-dark: #e0e0e0;
+            --border-color-dark: #333;
+        }
+
+        /* === Dark Mode Theme === */
+        [data-bs-theme="dark"] {
+            --bs-body-bg: var(--body-bg-dark);
+            --bs-body-color: var(--text-color-dark);
+            --bs-border-color: var(--border-color-dark);
+        }
+
+        /* === General Styles === */
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--bs-body-bg);
+            color: var(--bs-body-color);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .main-container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* === Sidebar (Offcanvas) === */
+        .sidebar {
+            width: var(--sidebar-width);
+            background-color: var(--card-bg-light);
+            border-right: 1px solid var(--border-color-light);
+            transition: background-color 0.3s;
+        }
+        
+        [data-bs-theme="dark"] .sidebar {
+            background-color: var(--card-bg-dark);
+            border-right: 1px solid var(--border-color-dark);
+        }
+
+        .sidebar .nav-link {
+            font-size: 1rem;
+            font-weight: 500;
+            color: #6c757d;
+            padding: 12px 25px;
+            display: flex;
+            align-items: center;
+            transition: all 0.2s ease-in-out;
+        }
+
+        .sidebar .nav-link i {
+            width: 25px;
+            margin-right: 15px;
+            font-size: 1.1rem;
+            text-align: center;
+        }
+
+        .sidebar .nav-link.active, .sidebar .nav-link:hover {
+            color: var(--primary-color);
+            background-color: rgba(0, 169, 127, 0.1);
+        }
+
+        /* === Main Content === */
+        .main-content {
+            flex: 1;
+            padding: 2rem;
+            overflow-y: auto;
+        }
+
+        /* === Topbar === */
+        .topbar {
+            background-color: var(--card-bg-light);
+            border-bottom: 1px solid var(--border-color-light);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            padding: 0.75rem 2rem;
+            transition: background-color 0.3s;
+        }
+        
+        [data-bs-theme="dark"] .topbar {
+            background-color: var(--card-bg-dark);
+            border-bottom-color: var(--border-color-dark);
+        }
+
+        .topbar .page-title {
+            font-weight: 600;
+        }
+
+        /* === Sensor Cards === */
+        .sensor-card {
+            background-color: var(--card-bg-light);
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+            transition: all 0.3s ease;
+        }
+        [data-bs-theme="dark"] .sensor-card {
+            background-color: var(--card-bg-dark);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+        }
+
+        .sensor-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0, 169, 127, 0.15);
+        }
+
+        .sensor-card .card-body {
+            padding: 1.5rem;
+        }
+
+        .sensor-card .sensor-icon {
+            font-size: 1.8rem;
+            padding: 15px;
+            border-radius: 10px;
+            color: #fff;
+            margin-bottom: 1rem;
+        }
+
+        .sensor-card .sensor-value {
+            font-size: 2rem;
+            font-weight: 700;
+        }
+        
+        /* === Dark Mode Toggle Switch === */
+        .theme-switch-wrapper {
+            display: flex;
+            align-items: center;
+        }
+        .theme-switch {
+            display: inline-block;
+            height: 24px;
+            position: relative;
+            width: 48px;
+        }
+        .theme-switch input {
+            display:none;
+        }
+        .slider {
+            background-color: #ccc;
+            bottom: 0;
+            cursor: pointer;
+            left: 0;
+            position: absolute;
+            right: 0;
+            top: 0;
+            transition: .4s;
+            border-radius: 34px;
+        }
+        .slider:before {
+            background-color: #fff;
+            bottom: 3px;
+            content: "";
+            height: 18px;
+            left: 3px;
+            position: absolute;
+            transition: .4s;
+            width: 18px;
+            border-radius: 50%;
+        }
+        input:checked + .slider {
+            background-color: var(--primary-color);
+        }
+        input:checked + .slider:before {
+            transform: translateX(24px);
+        }
+        
+        /* === Chart and Status Card === */
+        .custom-card {
+             background-color: var(--card-bg-light);
+             border: none;
+             border-radius: 12px;
+             box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+        }
+        [data-bs-theme="dark"] .custom-card {
+            background-color: var(--card-bg-dark);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+        }
+        
+        .nav-tabs .nav-link {
+            color: #6c757d;
+        }
+        .nav-tabs .nav-link.active {
+            color: var(--primary-color);
+            border-color: var(--primary-color);
+            border-bottom-width: 3px;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="offcanvas offcanvas-start sidebar" tabindex="-1" id="sidebarMenu" aria-labelledby="sidebarMenuLabel">
+        <div class="offcanvas-header border-bottom">
+            <h5 class="offcanvas-title fw-bold" id="sidebarMenuLabel">
+                <i class="fa-solid fa-water me-2 text-primary"></i>Aqua Monitor
+            </h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        </div>
+        <div class="offcanvas-body d-flex flex-column p-0">
+            <ul class="nav flex-column flex-grow-1 mt-3">
+                <li class="nav-item">
+                    <a class="nav-link active" href="#"><i class="fas fa-tachometer-alt"></i> Dashboard</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#"><i class="fas fa-chart-line"></i> Grafik Sensor</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#"><i class="fas fa-history"></i> Riwayat Log</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#"><i class="fas fa-cog"></i> Pengaturan</a>
+                </li>
+            </ul>
+            <div class="border-top p-3">
+                 <a class="nav-link" href="#"><i class="fas fa-sign-out-alt"></i> Logout</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <header class="topbar d-flex justify-content-between align-items-center mb-4">
+            <div class="d-flex align-items-center">
+                 <button class="btn btn-light d-lg-none me-3" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebarMenu" aria-controls="sidebarMenu">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <h1 class="h4 mb-0 page-title">Dashboard Monitoring Kualitas Air Tambak</h1>
+            </div>
+
+            <div class="d-flex align-items-center">
+                <div class="theme-switch-wrapper me-3">
+                    <i class="fas fa-sun me-2"></i>
+                    <label class="theme-switch" for="theme-switch">
+                        <input type="checkbox" id="theme-switch" />
+                        <div class="slider round"></div>
+                    </label>
+                    <i class="fas fa-moon ms-2"></i>
+                </div>
+                <a href="#" class="btn btn-light position-relative me-3">
+                    <i class="fas fa-bell"></i>
+                    <span class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle"></span>
+                </a>
+                <div class="dropdown">
+                    <a href="#" class="d-block link-dark text-decoration-none dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                        <img src="https://i.pravatar.cc/40?img=1" alt="mdo" width="40" height="40" class="rounded-circle">
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end text-small">
+                        <li><a class="dropdown-item" href="#">Profil</a></li>
+                        <li><a class="dropdown-item" href="#">Pengaturan</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="#">Logout</a></li>
+                    </ul>
+                </div>
+            </div>
+        </header>
+
+        <main>
+            <section class="row g-4 mb-4">
+                <div class="col-6 col-md-4 col-xl-2">
+                    <div class="card sensor-card h-100">
+                        <div class="card-body">
+                            <div class="sensor-icon" style="background-color: #0d6efd;"><i class="fa-solid fa-flask-vial"></i></div>
+                            <h6 class="text-muted">pH</h6>
+                            <p class="sensor-value">7.3</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-6 col-md-4 col-xl-2">
+                    <div class="card sensor-card h-100">
+                        <div class="card-body">
+                            <div class="sensor-icon" style="background-color: #198754;"><i class="fa-solid fa-wind"></i></div>
+                            <h6 class="text-muted">DO</h6>
+                            <p class="sensor-value">6.5<small> mg/L</small></p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-6 col-md-4 col-xl-2">
+                    <div class="card sensor-card h-100">
+                        <div class="card-body">
+                            <div class="sensor-icon" style="background-color: #ffc107;"><i class="fa-solid fa-temperature-half"></i></div>
+                            <h6 class="text-muted">Suhu</h6>
+                            <p class="sensor-value">28<small>°C</small></p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-6 col-md-4 col-xl-2">
+                    <div class="card sensor-card h-100">
+                        <div class="card-body">
+                            <div class="sensor-icon" style="background-color: #0dcaf0;"><i class="fa-solid fa-water"></i></div>
+                            <h6 class="text-muted">Salinitas</h6>
+                            <p class="sensor-value">18<small> ppt</small></p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-6 col-md-4 col-xl-2">
+                    <div class="card sensor-card h-100">
+                        <div class="card-body">
+                            <div class="sensor-icon" style="background-color: #fd7e14;"><i class="fa-solid fa-atom"></i></div>
+                            <h6 class="text-muted">TDS</h6>
+                            <p class="sensor-value">650<small> ppm</small></p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-6 col-md-4 col-xl-2">
+                    <div class="card sensor-card h-100">
+                        <div class="card-body">
+                            <div class="sensor-icon" style="background-color: #6f42c1;"><i class="fa-solid fa-ruler-vertical"></i></div>
+                            <h6 class="text-muted">Ultrasonik</h6>
+                            <p class="sensor-value">120<small> cm</small></p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <section class="mb-4">
+                <div class="alert alert-success d-flex align-items-center" role="alert">
+                    <i class="fa-solid fa-circle-check fa-2x me-3"></i>
+                    <div>
+                        <h5 class="alert-heading mb-0">Kualitas Air: BAIK</h5>
+                        <span>Semua parameter berada dalam rentang optimal.</span>
+                    </div>
+                </div>
+                 </section>
+
+            <section>
+                <div class="card custom-card">
+                    <div class="card-header bg-transparent border-0 pt-3">
+                        <ul class="nav nav-tabs card-header-tabs" id="sensorTabs" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active" data-sensor="ph" type="button">pH</button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" data-sensor="do" type="button">DO</button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" data-sensor="suhu" type="button">Suhu</button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" data-sensor="salinitas" type="button">Salinitas</button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" data-sensor="tds" type="button">TDS</button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" data-sensor="ultrasonik" type="button">Ultrasonik</button>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="card-body p-4">
+                        <canvas id="sensorChart" style="height: 350px;"></canvas>
+                    </div>
+                </div>
+            </section>
+        </main>
+        
+        <footer class="mt-4 text-center text-muted">
+            <p>&copy; 2025 Aqua Monitor Dashboard. All rights reserved.</p>
+        </footer>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            // === Dark Mode Logic ===
+            const themeSwitch = document.getElementById('theme-switch');
+            const currentTheme = localStorage.getItem('theme');
+
+            if (currentTheme) {
+                document.documentElement.setAttribute('data-bs-theme', currentTheme);
+                if (currentTheme === 'dark') {
+                    themeSwitch.checked = true;
+                }
+            }
+
+            themeSwitch.addEventListener('change', function(e) {
+                if (e.target.checked) {
+                    document.documentElement.setAttribute('data-bs-theme', 'dark');
+                    localStorage.setItem('theme', 'dark');
+                } else {
+                    document.documentElement.setAttribute('data-bs-theme', 'light');
+                    localStorage.setItem('theme', 'light');
+                }
+            });
+
+            // === Chart.js Logic ===
+            const timeLabels = ['10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00'];
+            
+            const sensorData = {
+                ph:         { label: 'pH', data: [7.2, 7.3, 7.3, 7.4, 7.2, 7.1, 7.3], color: '#0d6efd' },
+                do:         { label: 'DO (mg/L)', data: [6.8, 6.7, 6.5, 6.6, 6.4, 6.5, 6.5], color: '#198754' },
+                suhu:       { label: 'Suhu (°C)', data: [28.1, 28.2, 28.5, 28.6, 28.4, 28.2, 28.0], color: '#ffc107' },
+                salinitas:  { label: 'Salinitas (ppt)', data: [18, 18.2, 18.1, 18, 17.9, 18.3, 18], color: '#0dcaf0' },
+                tds:        { label: 'TDS (ppm)', data: [640, 645, 650, 655, 648, 652, 650], color: '#fd7e14' },
+                ultrasonik: { label: 'Ketinggian (cm)', data: [121, 120, 119, 120, 122, 121, 120], color: '#6f42c1' }
+            };
+
+            const ctx = document.getElementById('sensorChart').getContext('2d');
+            let sensorChartInstance = null;
+
+            function renderChart(sensorType) {
+                if (sensorChartInstance) {
+                    sensorChartInstance.destroy();
+                }
+
+                const selectedData = sensorData[sensorType];
+                
+                sensorChartInstance = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: timeLabels,
+                        datasets: [{
+                            label: selectedData.label,
+                            data: selectedData.data,
+                            borderColor: selectedData.color,
+                            backgroundColor: `${selectedData.color}33`,
+                            borderWidth: 3,
+                            fill: true,
+                            tension: 0.4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: { beginAtZero: false }
+                        },
+                        plugins: {
+                            legend: { display: false }
+                        },
+                        interaction: {
+                            intersect: false,
+                            mode: 'index',
+                        }
+                    }
+                });
+            }
+            
+            // Tab switching logic
+            const sensorTabs = document.querySelectorAll('#sensorTabs .nav-link');
+            sensorTabs.forEach(tab => {
+                tab.addEventListener('click', function (event) {
+                    event.preventDefault();
+                    
+                    // Update active class
+                    sensorTabs.forEach(t => t.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    const sensorType = this.getAttribute('data-sensor');
+                    renderChart(sensorType);
+                });
+            });
+
+            // Initial chart render
+            renderChart('ph');
+        });
+    </script>
+</body>
+</html>
